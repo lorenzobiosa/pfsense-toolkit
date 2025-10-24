@@ -8,7 +8,7 @@ mkdir -p "$WORK_DIR"
 MERGED_FILE="$WORK_DIR/merged.txt"
 
 # Output file for pfBlockerNG
-FINAL_FILE="list.txt"
+FINAL_FILE="/usr/local/www/list.txt"
 
 # Define URLs and names directly in the script
 LIST=$(cat <<'EOF'
@@ -120,23 +120,23 @@ EOF
 )
 
 # Download each list
+echo "$(date +'%Y-%m-%d %H:%M:%S') - Starting download of DNSBL lists..."
 echo "$LIST" | while read -r url name; do
-    echo "Downloading $name..."
+    echo "$(date +'%Y-%m-%d %H:%M:%S') - Downloading $name..."
     curl -s -o "$WORK_DIR/$name.txt" "$url"
 done
 wget -q -O "$WORK_DIR/PhishTank.bz2" "https://data.phishtank.com/data/online-valid.csv.bz2"
 bzip2 -d "$WORK_DIR/PhishTank.bz2"
 
 # Merge all files into the merged file
-echo "Merging all downloaded files into $MERGED_FILE..."
+echo "$(date +'%Y-%m-%d %H:%M:%S') - Merging all downloaded files into $MERGED_FILE..."
 cat "$WORK_DIR"/* | grep -v 'phishtank' > "$MERGED_FILE"
 
-echo "Filtering for pfBlockerNG/DNSBL domains and ip addresses..."
-grep -hPo '\b(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\b' "$MERGED_FILE" | sort -u > "$FINAL_FILE"
-grep -hPo '(?:\*\.)?(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}' "$MERGED_FILE" | sort -u >> "$FINAL_FILE"
+echo "$(date +'%Y-%m-%d %H:%M:%S') - Filtering for pfBlockerNG/DNSBL domains and ip addresses..."
+grep -oP '\b(?!(10)|0\.0\.0\.|127|192\.168|172\.(2[0-9]|1[6-9]|3[0-2]))[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' "$MERGED_FILE" | sort -u > "$FINAL_FILE"
+grep -oP '\b(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)\.)+(?:[a-zA-Z]{2,63}|local|lan|internal|corp|home|test)\b' "$MERGED_FILE" | sort -u >> "$FINAL_FILE"
 
-echo "Cleaning up temporary files..."
-# Remove all txt files except list.txt
+echo "$(date +'%Y-%m-%d %H:%M:%S') - Cleaning up temporary files..."
 rm -rf "$WORK_DIR"
 
-echo "Done. Final list saved in $FINAL_FILE."
+echo "$(date +'%Y-%m-%d %H:%M:%S') - DNSBL list generation completed. Final list is at $FINAL_FILE."
