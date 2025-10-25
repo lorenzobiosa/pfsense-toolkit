@@ -8,7 +8,7 @@ mkdir -p "$WORK_DIR"
 MERGED_FILE="$WORK_DIR/merged.txt"
 
 # Output file for pfBlockerNG
-FINAL_FILE="/usr/local/www/list.txt"
+FINAL_FILE="dnsbl-list.txt"
 
 # Define URLs and names directly in the script
 LIST=$(cat <<'EOF'
